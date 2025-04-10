@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,10 +8,251 @@ datasource db {
 }
 
 model User {
-  id Int @id @default(autoincrement())
-  email String @unique
-  name String?
+  id                 String     @id @default(uuid())
+  email              String     @unique
+  phone              String?    @unique
+  passwordHash       String
+  name               String
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  // Relations
+  accounts          Account[]
+  categories        Category[]
+  goals             Goal[]
+  createdEvents     Event[] @relation("CreatedEvents")
+  transactions      Transaction[]
+  recurringTransactions RecurringTransaction[]
+  notifications     Notification[]
+  contacts         UserContact[] @relation("UserContacts")
+  contactOf        UserContact[] @relation("ContactOf")
+  accountMembers   AccountMember[]
+  goalMembers      GoalMember[]
+  eventMembers     EventMember[]
+
+  @@map("users")
+}
+
+model UserContact {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], name: "UserContacts")
+  contactUserId  String
+  contactUser    User     @relation(fields: [contactUserId], references: [id], name: "ContactOf")
+  contactName    String?
+  createdAt      DateTime @default(now())
+  status         String   @default("pending") // 'pending'|'accepted'|'rejected'
+
+  @@map("user_contacts")
+}
+
+model Account {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  name           String
+  type           String   @default("personal") // 'personal'|'joint'
+  balance        Decimal
+  currency       String
+  initialBalance Decimal
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  isActive       Boolean  @default(true)
+
+  // Relations
+  transactions   Transaction[]
+  members       AccountMember[]
+  events        Event[]
+  RecurringTransaction RecurringTransaction[]
+  Goal Goal[]
+
+  @@map("accounts")
+}
+
+model AccountMember {
+  id        String   @id @default(uuid())
+  accountId String
+  account   Account  @relation(fields: [accountId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  role      String   @default("member") // 'owner'|'admin'|'member'
+  joinedAt  DateTime @default(now())
+  invitedBy String?
+
+  @@map("account_members")
+}
+
+model Category {
+  id               String    @id @default(uuid())
+  userId           String?
+  user             User?     @relation(fields: [userId], references: [id])
+  name             String
+  type             String    // "income"|"expense"|"transfer"
+  parentId         String?   // Для подкатегорий
+  parent           Category? @relation(fields: [parentId], references: [id], name: "CategoryChildren")
+  children         Category[] @relation("CategoryChildren") // Противоположная связь
+  icon             String?
+  color            String?
+  isSystem         Boolean   @default(false)
+  cashbackPercentage Decimal?
+
+  transactions     Transaction[]
+  RecurringTransaction RecurringTransaction[]
+
+}
+
+model Transaction {
+  id              String   @id @default(uuid())
+  accountId       String
+  account         Account  @relation(fields: [accountId], references: [id])
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  categoryId      String
+  category        Category @relation(fields: [categoryId], references: [id])
+  amount          Decimal
+  currency        String
+  convertedAmount Decimal?
+  date            DateTime @default(now())
+  description     String?
+  type            String   // 'income'|'expense'|'transfer'
+  status          String   @default("completed") // 'completed'|'pending'|'cancelled'
+  recurringId     String?
+  recurringTransaction RecurringTransaction? @relation(fields: [recurringId], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  location        String?
+  receiptImage    String?
+  tags            String[]
+
+  @@map("transactions")
+}
+
+model Goal {
+  id                String   @id @default(uuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id])
+  name              String
+  targetAmount      Decimal
+  currentAmount     Decimal  @default(0)
+  currency          String
+  targetDate        DateTime?
+  autoSavePercentage Decimal?
+  autoSaveAccountId String?
+  autoSaveAccount   Account? @relation(fields: [autoSaveAccountId], references: [id])
+  category          String?
+  isShared          Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  icon              String?
+  color             String?
+
+  // Relations
+  members          GoalMember[]
+
+  @@map("goals")
+}
+
+model GoalMember {
+  id                String   @id @default(uuid())
+  goalId            String
+  goal              Goal     @relation(fields: [goalId], references: [id])
+  userId            String
+  user              User     @relation(fields: [userId], references: [id])
+  contributedAmount Decimal  @default(0)
+  joinedAt          DateTime @default(now())
+  status            String   @default("active") // 'active'|'invited'|'rejected'
+
+  @@map("goal_members")
+}
+
+model Event {
+  id              String   @id @default(uuid())
+  creatorId       String
+  creator         User     @relation(fields: [creatorId], references: [id], name: "CreatedEvents")
+  accountId       String
+  account         Account  @relation(fields: [accountId], references: [id])
+  name            String
+  totalAmount     Decimal
+  paidAmount      Decimal  @default(0)
+  currency        String
+  description     String?
+  deadline        DateTime?
+  status          String   @default("active") // 'active'|'completed'|'cancelled'
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  autoClose       Boolean  @default(true)
+  category        String?
+
+  // Relations
+  members        EventMember[]
+
+  @@map("events")
+}
+
+model EventMember {
+  id              String   @id @default(uuid())
+  eventId         String
+  event           Event    @relation(fields: [eventId], references: [id])
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  amount          Decimal
+  paidAmount      Decimal  @default(0)
+  status          String   @default("pending") // 'pending'|'paid'|'declined'
+  isPercentage    Boolean  @default(false)
+  percentage      Decimal?
+  joinedAt        DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  notificationSent Boolean @default(false)
+
+  @@map("event_members")
+}
+
+model Currency {
+  code            String   @id
+  name            String
+  symbol          String
+  rateToDefault   Decimal
+  updatedAt       DateTime @updatedAt
+
+  @@map("currencies")
+}
+
+model RecurringTransaction {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  accountId       String
+  account         Account  @relation(fields: [accountId], references: [id])
+  categoryId      String
+  category        Category @relation(fields: [categoryId], references: [id])
+  amount          Decimal
+  description     String?
+  type            String   // 'income'|'expense'
+  frequency       String   // 'daily'|'weekly'|'monthly'|'yearly'
+  startDate       DateTime
+  endDate         DateTime?
+  nextOccurrence  DateTime
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  transactions    Transaction[]
+
+  @@map("recurring_transactions")
+}
+
+model Notification {
+  id                String   @id @default(uuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id])
+  title             String
+  message           String
+  type              String   // 'regular_payment'|'goal'|'event'|'expense'|'system'
+  isRead            Boolean  @default(false)
+  relatedEntityType String?
+  relatedEntityId   String?
+  createdAt         DateTime @default(now())
+  actionUrl         String?
+
+  @@map("notifications")
 }
