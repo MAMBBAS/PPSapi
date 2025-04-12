@@ -6,11 +6,13 @@ import {
   Patch,
   Param,
   Delete,
-  UsePipes, ValidationPipe
+  UsePipes, ValidationPipe, Req, UseGuards
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import {AuthGuard} from '@nestjs/passport';
+import {User} from './entities/user.entity';
 
 
 @Controller('users')
@@ -31,6 +33,12 @@ export class UsersController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
+  }
+  
+  @UseGuards(AuthGuard('jwt'))
+  @Get('me')
+  getCurrentUser(@Req() req: Request & { user: User }) {
+    return req.user;
   }
 
   @Patch(':id')

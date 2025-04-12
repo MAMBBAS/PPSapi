@@ -2,13 +2,17 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import * as bcrypt from 'bcrypt';
-import {CreateUserDto} from '../users/dto/create-user.dto';
+import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService, private jwtService: JwtService, private usersService: UsersService,) {}
+  constructor(
+    private prisma: PrismaService,
+    private jwtService: JwtService,
+    private usersService: UsersService,
+  ) {}
   
   async register(dto: CreateUserDto) {
     const hashedPassword = await bcrypt.hash(dto.password, 10);
@@ -24,16 +28,35 @@ export class AuthService {
   }
   
   async login(email: string, password: string) {
+    // Ищем пользователя по email
     const user = await this.usersService.findByEmail(email);
     
-    if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
-      throw new UnauthorizedException('Неверный логин или пароль');
+    if (!user) {
+      throw new UnauthorizedException('Пользователь с таким email не найден');
     }
     
-    const payload = { sub: user.id, email: user.email };
+    // Сравниваем пароли
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Неверный пароль');
+    }
+    
+    // Создаем JWT токен
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      name: user.name,
+      phone: user.phone,
+    };
     
     return {
       access_token: this.jwtService.sign(payload),
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      },
     };
   }
 }

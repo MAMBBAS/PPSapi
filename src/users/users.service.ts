@@ -144,6 +144,19 @@ export class UsersService {
     });
   }
   
+  async findById(id: string) {
+    return this.prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        phone: true,
+        passwordHash: true
+      }
+    });
+  }
+  
   async validatePassword(userId: string, password: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
