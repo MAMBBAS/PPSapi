@@ -135,12 +135,12 @@ export class UsersService {
   
   // Дополнительные методы
   async findByEmail(email: string) {
-    return this.prisma.user.findUnique({
+    return this.prisma.user.findFirst({
       where: { email },
       select: {
         ...this.userSafeFields(),
-        passwordHash: true // Для аутентификации
-      }
+        passwordHash: true,
+      },
     });
   }
   

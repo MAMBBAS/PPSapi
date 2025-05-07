@@ -15,13 +15,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
   
   async validate(payload: any) {
-    // Возвращаем все данные из токена + можем добавить из БД
-    return {
-      id: payload.sub,
-      email: payload.email,
-      name: payload.name,
-      phone: payload.phone
-      // другие поля из payload
-    };
-  }
+      return {
+        id: payload.sub,
+        email: payload.email,
+        name: payload.name,
+        phone: payload.phone,
+      };
+    }
 }

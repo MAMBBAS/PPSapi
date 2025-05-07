@@ -1,25 +1,24 @@
-import { IsEmail, IsString, IsOptional, MinLength, MaxLength, Matches } from 'class-validator';
+// create-user.dto.ts
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsEmail, IsString, MinLength, IsOptional, IsPhoneNumber } from 'class-validator';
 
 export class CreateUserDto {
-  @IsString({ message: 'Имя должно быть строкой' })
-  @MinLength(2, { message: 'Имя слишком короткое (минимум 2 символа)' })
-  @MaxLength(50, { message: 'Имя слишком длинное (максимум 50 символов)' })
-  name: string;
-  
-  @IsEmail({}, { message: 'Некорректный email' })
+  @ApiProperty({ example: 'user@example.com', description: 'Email пользователя' })
+  @IsEmail({}, { message: 'Некорректный формат email' })
   email: string;
   
-  @IsString()
-  @MinLength(8, { message: 'Пароль слишком короткий (минимум 8 символов)' })
-  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*$/, {
-    message: 'Пароль должен содержать цифры, заглавные и строчные буквы'
-  })
+  @ApiProperty({ example: 'Иван Иванов', description: 'Имя пользователя' })
+  @IsString({ message: 'Имя должно быть строкой' })
+  @MinLength(2, { message: 'Имя должно содержать минимум 2 символа' })
+  name: string;
+  
+  @ApiProperty({ example: 'securePassword123', description: 'Пароль' })
+  @IsString({ message: 'Пароль должен быть строкой' })
+  @MinLength(6, { message: 'Пароль должен содержать минимум 6 символов' })
   password: string;
   
+  @ApiPropertyOptional({ example: '+79123456789', description: 'Номер телефона' })
   @IsOptional()
-  @IsString()
-  @Matches(/^\+?[0-9]{10,15}$/, {
-    message: 'Некорректный номер телефона'
-  })
+  @IsPhoneNumber('RU', { message: 'Некорректный формат номера телефона' })
   phone?: string;
 }
