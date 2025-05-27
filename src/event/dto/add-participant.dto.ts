@@ -1,13 +1,14 @@
+// src/event/dto/add-participant.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class AddParticipantDto {
-  @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440000', description: 'ID пользователя' })
+  @ApiProperty({ example: '5f8d0d55b4ef3b1f2c3d4e5a', description: 'ID пользователя, добавляемого в участники' })
   @IsString()
   @IsNotEmpty()
   userId: string;
   
-  @ApiProperty({ example: 10000, description: 'Сумма взноса' })
+  @ApiProperty({ example: 1000, description: 'Сумма вклада участника' })
   @IsNumber()
   @IsNotEmpty()
   amount: number;

@@ -1,22 +1,14 @@
+// src/contacts/dto/create-contact.dto.ts
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsEmail,
-  IsNotEmpty,
-  IsNotEmptyObject,
   IsOptional,
   IsPhoneNumber,
   IsString,
-  ValidateIf
+  IsNotEmpty,
 } from 'class-validator';
 
 export class CreateContactDto {
-  @ApiPropertyOptional({
-    description: 'ID текущего пользователя (автоматически подставляется, если не указан)',
-    example: 'd62d5bbe-afef-4953-a87c-431d611afdc4'
-  })
-  @IsOptional()
-  @IsString()
-  userId?: string;
   
   @ApiPropertyOptional({
     description: 'ID пользователя для добавления в контакты',
@@ -49,8 +41,4 @@ export class CreateContactDto {
   @IsOptional()
   @IsString()
   contactName?: string;
-  
-  @ValidateIf(o => !o.contactId && !o.contactEmail && !o.contactPhone)
-  @IsNotEmptyObject()
-  atLeastOneIdentifier?: never;
 }

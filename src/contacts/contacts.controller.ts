@@ -4,7 +4,7 @@ import {
   Body,
   UseGuards,
   HttpCode,
-  HttpStatus, Get, Param, Delete
+  HttpStatus, Get, Param, Delete, Req
 } from '@nestjs/common';
 import { ContactsService } from './contacts.service';
 import { CreateContactDto } from './dto/create-contact.dto';
@@ -21,10 +21,12 @@ import {
   ApiBadRequestResponse, ApiParam, ApiOkResponse, ApiForbiddenResponse
 } from '@nestjs/swagger';
 import { ContactResponseDto } from './dto/contact-response.dto';
+import { JwtAuthGuard } from '../guards/jwt-auth-guard';
 
 @ApiTags('Контакты')
-@Controller('contacts')
+@Controller('contacts') // <-- Base path for all routes in this controller
 @ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 export class ContactsController {
   constructor(private readonly contactsService: ContactsService) {}
   
@@ -48,11 +50,17 @@ export class ContactsController {
   })
   async createContact(
     @AuthUser() user: User,
-    @Body() dto: CreateContactDto
+    @Body() dto: CreateContactDto,
+    @Req() req: Request // Добавляем запрос для отладки
   ) {
+    if (!user) {
+      throw new Error('User object is missing - check your AuthGuard');
+    }
+    
     return this.contactsService.createContactRequest(user, dto);
   }
   
+  // Этот эндпоинт останется /api/contacts/user/:userId
   @Get('/user/:userId')
   @ApiOperation({
     summary: 'Получить контакты пользователя',
@@ -67,7 +75,8 @@ export class ContactsController {
     return this.contactsService.getUserContacts(userId);
   }
   
-  @Delete(':contactId')
+  // --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
+  @Delete('user/:contactId') // Маршрут теперь /contacts/user/:contactId
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Удалить контакт' })
   @ApiParam({ name: 'contactId', description: 'ID контакта для удаления' })
@@ -83,6 +92,4 @@ export class ContactsController {
   ) {
     return this.contactsService.deleteContact(contactId, user.id);
   }
-  
-  
 }

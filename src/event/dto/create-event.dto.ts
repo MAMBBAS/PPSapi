@@ -1,5 +1,19 @@
+// src/event/dto/create-event.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsArray, IsDateString, IsNotEmpty, IsNumber, IsString, IsOptional, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+
+export class EventMemberDto {
+  @ApiProperty({ example: '5f8d0d55b4ef3b1f2c3d4e5a', description: 'ID пользователя' })
+  @IsString()
+  @IsNotEmpty()
+  userId: string;
+  
+  @ApiProperty({ example: 1000, description: 'Сумма вклада участника' })
+  @IsNumber()
+  @IsNotEmpty()
+  amount: number;
+}
 
 export class CreateEventDto {
   @ApiProperty({ example: 'Корпоратив', description: 'Название события' })
@@ -16,4 +30,15 @@ export class CreateEventDto {
   @IsDateString()
   @IsNotEmpty()
   deadline: Date;
+  
+  @ApiProperty({
+    type: [EventMemberDto],
+    description: 'Список участников события с их вкладами, включая создателя, если есть взнос.',
+    required: false,
+  })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => EventMemberDto)
+  @IsOptional()
+  members?: EventMemberDto[];
 }

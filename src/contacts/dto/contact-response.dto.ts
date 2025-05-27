@@ -1,36 +1,40 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 
+// Если у вас еще нет этого DTO, создайте его
 export class ContactResponseDto {
-  @ApiProperty({ example: 'd62d5bbe-afef-4953-a87c-431d611afdc4' })
-  id: string;
+  @ApiProperty({
+    description: 'ID записи контакта (связи) в базе данных',
+    example: 'eebf5f8d-1e8b-41d6-9d9c-8391b13fa426',
+  })
+  contactId: string; // Изменено с 'id' на 'contactId'
   
-  @ApiProperty({ example: 'Иван Иванов' })
+  @ApiProperty({
+    description: 'ID пользователя, с которым установлен контакт',
+    example: '694bb5ee-b915-4b84-82c1-d311da01301a',
+  })
+  contactUserId: string;
+  
+  @ApiProperty({ example: 'Стёпа Мокрушин' })
   name: string;
   
-  @ApiPropertyOptional({ example: 'https://example.com/avatar.jpg' })
-  avatar?: string;
+  @ApiProperty({ example: null, nullable: true })
+  avatar: string | null;
   
-  @ApiProperty({ example: 'user@example.com' })
+  @ApiProperty({ example: 'stepa@gmail.com' })
   email: string;
   
-  @ApiProperty({ example: '+79161234567', required: false })
-  phone?: string;
+  @ApiProperty({ example: '+79832894116' })
+  phone: string;
   
-  @ApiProperty({ example: '2024-01-01T12:00:00.000Z' })
+  @ApiProperty({ example: '2025-05-27T20:36:36.157Z' })
   createdAt: Date;
   
-  @ApiProperty({ enum: ['pending', 'accepted', 'rejected'] })
-  status: string;
+  @ApiProperty({ example: 'pending', enum: ['pending', 'accepted', 'blocked'] })
+  status: string; // Или 'ContactStatus' если у вас есть enum
   
   @ApiProperty({
-    description: 'True если текущий пользователь создал этот контакт',
-    example: true
+    description: 'True, если текущий пользователь является инициатором контакта',
+    example: true,
   })
   isOwner: boolean;
-  
-  @ApiProperty({
-    description: 'ID связанного пользователя',
-    example: 'd62d5bbe-afef-4953-a87c-431d611afdc4'
-  })
-  otherUserId: string;
 }

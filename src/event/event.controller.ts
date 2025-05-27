@@ -1,3 +1,4 @@
+// src/event/event.controller.ts
 import {
   Controller,
   Post,
@@ -8,7 +9,7 @@ import {
   Put,
   UseGuards,
   HttpCode,
-  UnauthorizedException
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CreateEventDto } from './dto/create-event.dto';
 import { AddParticipantDto } from './dto/add-participant.dto';
@@ -19,12 +20,12 @@ import {
   ApiResponse,
   ApiTags,
   ApiParam,
-  ApiBody
+  ApiBody,
 } from '@nestjs/swagger';
 import { AuthUser } from '../decorators/auth-user.decorator';
 import { User } from '@prisma/client';
-import {JwtAuthGuard} from '../guards/jwt-auth-guard';
-import {EventsService} from './event.service';
+import { JwtAuthGuard } from '../guards/jwt-auth-guard';
+import { EventsService } from './event.service';
 
 @ApiTags('События')
 @Controller('events')
@@ -39,31 +40,26 @@ export class EventsController {
   @ApiResponse({
     status: 200,
     type: EventResponseDto,
-    description: 'Событие успешно создано'
+    description: 'Событие успешно создано',
   })
-  async createEvent(
-    @AuthUser() user: User,
-    @Body() dto: CreateEventDto
-  ) {
+  async createEvent(@AuthUser() user: User, @Body() dto: CreateEventDto) {
     if (!user?.id) {
       throw new UnauthorizedException('Не удалось идентифицировать пользователя');
     }
     return this.eventsService.createEvent(user.id, dto);
   }
   
-  @Post(':id/participants')
+  @Post(':id/members') // Путь для добавления отдельных членов
   @HttpCode(200)
   @ApiParam({ name: 'id', description: 'ID события' })
   @ApiOperation({ summary: 'Добавить участника к событию' })
+  @ApiBody({ type: AddParticipantDto })
   @ApiResponse({
     status: 200,
     description: 'Участник успешно добавлен',
-    type: EventResponseDto
+    type: EventResponseDto,
   })
-  async addParticipant(
-    @Param('id') eventId: string,
-    @Body() dto: AddParticipantDto
-  ) {
+  async addParticipant(@Param('id') eventId: string, @Body() dto: AddParticipantDto) {
     return this.eventsService.addParticipant(eventId, dto);
   }
   
@@ -72,7 +68,7 @@ export class EventsController {
   @ApiResponse({
     status: 200,
     type: [EventResponseDto],
-    description: 'Список всех событий'
+    description: 'Список всех событий',
   })
   async getAllEvents() {
     return this.eventsService.getAllEvents();
@@ -84,10 +80,10 @@ export class EventsController {
   @ApiResponse({
     status: 200,
     type: EventResponseDto,
-    description: 'Детальная информация о событии'
+    description: 'Детальная информация о событии',
   })
   async getEvent(@Param('id') id: string) {
-    return this.eventsService.getEvent(id);
+    return this.eventsService.getEventWithDetails(id);
   }
   
   @Put(':id')
@@ -97,12 +93,9 @@ export class EventsController {
   @ApiResponse({
     status: 200,
     type: EventResponseDto,
-    description: 'Событие успешно обновлено'
+    description: 'Событие успешно обновлено',
   })
-  async updateEvent(
-    @Param('id') id: string,
-    @Body() dto: CreateEventDto
-  ) {
+  async updateEvent(@Param('id') id: string, @Body() dto: CreateEventDto) {
     return this.eventsService.updateEvent(id, dto);
   }
   
@@ -112,7 +105,7 @@ export class EventsController {
   @ApiOperation({ summary: 'Удалить событие' })
   @ApiResponse({
     status: 200,
-    description: 'Событие успешно удалено'
+    description: 'Событие успешно удалено',
   })
   async deleteEvent(@Param('id') id: string) {
     return this.eventsService.deleteEvent(id);
