@@ -1,4 +1,3 @@
-// src/accounts/dto/create-account.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDecimal, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 

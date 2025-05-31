@@ -1,4 +1,3 @@
-// src/event/event.controller.ts
 import {
   Controller,
   Post,
@@ -49,7 +48,7 @@ export class EventsController {
     return this.eventsService.createEvent(user.id, dto);
   }
   
-  @Post(':id/members') // Путь для добавления отдельных членов
+  @Post(':id/members')
   @HttpCode(200)
   @ApiParam({ name: 'id', description: 'ID события' })
   @ApiOperation({ summary: 'Добавить участника к событию' })

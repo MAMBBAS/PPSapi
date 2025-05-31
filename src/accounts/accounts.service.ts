@@ -12,7 +12,7 @@ export class AccountsService {
       data: {
         ...dto,
         userId,
-        balance: 0, // Начальный баланс
+        balance: 0,
       },
     });
   }

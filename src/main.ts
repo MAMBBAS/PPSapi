@@ -6,15 +6,13 @@ import {ValidationPipe} from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
-  // Устанавливаем глобальный префикс
   app.setGlobalPrefix('api');
   
-  // Настройка Swagger
   const config = new DocumentBuilder()
     .setTitle('PPS')
     .setDescription('API description')
     .setVersion('1.0')
-    .addTag('auth') // Добавляем теги для группировки эндпоинтов
+    .addTag('auth')
     .addTag('users')
     .addBearerAuth(
       {
@@ -31,9 +29,9 @@ async function bootstrap() {
   
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // Удаляет поля не описанные в DTO
-      forbidNonWhitelisted: true, // Бросает ошибку при наличии лишних полей
-      transform: true, // Автоматически преобразует типы данных
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
     })
   );
   
@@ -44,12 +42,10 @@ async function bootstrap() {
     credentials: true,
   });
   
-  // Создаем документ с учетом глобального префикса
   const document = SwaggerModule.createDocument(app, config, {
-    ignoreGlobalPrefix: false, // Учитываем глобальный префикс
+    ignoreGlobalPrefix: false,
   });
   
-  // Настраиваем путь к Swagger UI (/api/docs)
   SwaggerModule.setup('api/docs', app, document);
   
   await app.listen(process.env.PORT ?? 5200);

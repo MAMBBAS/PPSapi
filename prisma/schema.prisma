@@ -55,7 +55,7 @@ model Account {
   transactions          Transaction[]
   createdAt             DateTime                @default(now())
   updatedAt             DateTime                @updatedAt
-  goalsWithAutoSave     Goal[]                  // Added opposite relation for Goal.autoSaveAccount
+  goalsWithAutoSave     Goal[]
 
   @@map("accounts")
 }
@@ -63,9 +63,9 @@ model Account {
 model Category {
   id                    String                 @id @default(uuid())
   name                  String
-  icon                  String?                // <-- добавлено
-  color                 String?                // <-- добавлено
-  type                  String                 // <-- добавлено: 'income' | 'expense' | 'transfer'
+  icon                  String?
+  color                 String?
+  type                  String
   userId                String?
   user                  User?                  @relation(fields: [userId], references: [id])
   transactions          Transaction[]
@@ -91,7 +91,7 @@ model Transaction {
   user        User      @relation(fields: [userId], references: [id])
 
 
-  categoryId  String? // ? означает, что транзакция может быть без категории
+  categoryId  String?
   category    Category? @relation(fields: [categoryId], references: [id])
 
   @@map("transactions")
@@ -147,7 +147,7 @@ model Event {
   creator     User               @relation("CreatedEvents", fields: [creatorId], references: [id])
   members     EventParticipant[]
   createdAt   DateTime           @default(now())
-  status      EventStatus        @default(Pending) // New status field with default
+  status      EventStatus        @default(Pending)
 
   @@map("events")
 }

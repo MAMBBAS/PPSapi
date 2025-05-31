@@ -7,7 +7,6 @@ import {
 import { PrismaService } from '../prisma.service';
 import { User } from '@prisma/client';
 import {CreateContactDto} from './dto/create-contact.dto';
-import {UpdateContactStatusDto} from './dto/update-contact-status.dto';
 
 @Injectable()
 export class ContactsService {
@@ -143,15 +142,11 @@ export class ContactsService {
       }
     });
     
-    // --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
     return contacts.map(contact => {
       const isOwner = contact.userId === userId;
       const otherUser = isOwner ? contact.contactUser : contact.user;
-      
       return {
-        // Переименовываем 'id' записи UserContact в 'contactId'
         contactId: contact.id,
-        // 'contactUserId' остаётся ID другого пользователя
         contactUserId: otherUser.id,
         name: otherUser.name,
         avatar: otherUser.avatar,
@@ -162,7 +157,6 @@ export class ContactsService {
         isOwner: isOwner,
       };
     });
-    // --- КОНЕЦ ИЗМЕНЕНИЯ ---
   }
   
   async deleteContact(contactId: string, currentUserId: string) {

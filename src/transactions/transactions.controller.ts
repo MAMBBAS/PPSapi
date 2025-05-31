@@ -1,4 +1,3 @@
-// src/transactions/transactions.controller.ts
 import {
   Controller,
   Get,
@@ -10,8 +9,8 @@ import {
   Query,
   HttpCode,
   HttpStatus,
-  UseGuards, // Добавляем обратно UseGuards
-  Req, // Добавляем обратно Req
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -20,17 +19,17 @@ import {
   ApiBody,
   ApiQuery,
   ApiParam,
-  ApiBearerAuth, // Добавляем обратно ApiBearerAuth
+  ApiBearerAuth,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../guards/jwt-auth-guard'; // Предполагаем, что этот guard есть
+import { JwtAuthGuard } from '../guards/jwt-auth-guard';
 import { TransactionsService } from './transactions.service';
 import { CreateTransactionDto, TransactionType } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { TransactionResponseDto } from './dto/transaction-response.dto';
 
 @ApiTags('Transactions')
-@ApiBearerAuth() // Указываем, что эндпоинты требуют Bearer токен
-@UseGuards(JwtAuthGuard) // Защищаем эндпоинты аутентификацией
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('transactions')
 export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
@@ -49,7 +48,6 @@ export class TransactionsController {
     description: 'Невалидные данные',
   })
   createTransaction(@Req() req, @Body() createTransactionDto: CreateTransactionDto) {
-    // userId берется из JWT токена
     return this.transactionsService.create(req.user.id, createTransactionDto);
   }
   
@@ -105,8 +103,8 @@ export class TransactionsController {
   findAll(
     @Req() req,
     @Query('type') type?: TransactionType,
-    @Query('accountId') accountId?: string, // Добавляем accountId в параметры запроса
-    @Query('categoryId') categoryId?: string, // Добавляем categoryId в параметры запроса
+    @Query('accountId') accountId?: string,
+    @Query('categoryId') categoryId?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
     @Query('limit') limit?: number,

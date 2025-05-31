@@ -1,4 +1,3 @@
-// src/transactions/dto/base-transaction.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsString,

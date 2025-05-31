@@ -1,4 +1,3 @@
-// src/event/dto/create-event.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsDateString, IsNotEmpty, IsNumber, IsString, IsOptional, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';

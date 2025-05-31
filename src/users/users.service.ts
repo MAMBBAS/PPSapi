@@ -23,7 +23,6 @@ export class UsersService {
   }
   
   async create(createUserDto: CreateUserDto) {
-    // Проверка на существующего пользователя
     const existingUser = await this.prisma.user.findFirst({
       where: {
         OR: [
@@ -37,10 +36,8 @@ export class UsersService {
       throw new ConflictException('Пользователь с таким email или телефоном уже существует');
     }
     
-    // Хеширование пароля
     const hashedPassword = await bcrypt.hash(createUserDto.password, this.saltRounds);
     
-    // Создание пользователя с автоматическими категориями
     return this.prisma.user.create({
       data: {
         email: createUserDto.email,
@@ -77,15 +74,12 @@ export class UsersService {
   }
   
   async update(id: string, updateUserDto: UpdateUserDto) {
-    // Prepare update data
     const updateData: Prisma.UserUpdateInput = {};
     
-    // Copy safe fields from DTO
     if (updateUserDto.name) updateData.name = updateUserDto.name;
     if (updateUserDto.email) updateData.email = updateUserDto.email;
     if (updateUserDto.phone) updateData.phone = updateUserDto.phone;
     
-    // If password is being updated
     if (updateUserDto.password) {
       updateData.passwordHash = await bcrypt.hash(updateUserDto.password, this.saltRounds);
     }
@@ -133,7 +127,6 @@ export class UsersService {
     ];
   }
   
-  // Дополнительные методы
   async findByEmail(email: string) {
     return this.prisma.user.findFirst({
       where: { email },

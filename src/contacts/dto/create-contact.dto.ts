@@ -1,4 +1,3 @@
-// src/contacts/dto/create-contact.dto.ts
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsEmail,

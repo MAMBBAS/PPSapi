@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TransactionType, TransactionStatus } from './create-transaction.dto'; // Import TransactionStatus from here
+import { TransactionType, TransactionStatus } from './create-transaction.dto';
 
 export class TransactionResponseDto {
   @ApiProperty({
@@ -22,7 +22,7 @@ export class TransactionResponseDto {
     format: 'double',
     minimum: 0.01,
   })
-  sum: number; // Corrected: this is 'sum', not 'amount'
+  sum: number;
   
   @ApiProperty({
     example: 'income',
@@ -33,7 +33,7 @@ export class TransactionResponseDto {
   type: TransactionType;
   
   @ApiProperty({
-    example: '2025-05-10T12:00:00Z', // Updated example to current year
+    example: '2025-05-10T12:00:00Z',
     description: 'Дата совершения транзакции',
     type: 'string',
     format: 'date-time',
@@ -47,16 +47,16 @@ export class TransactionResponseDto {
     enumName: 'TransactionStatus',
     default: TransactionStatus.COMPLETED,
   })
-  status: TransactionStatus; // Added back if you need it
+  status: TransactionStatus;
   
   @ApiProperty({
-    example: '14a5fee6-bc4c-49c9-b78e-9752746c46c6', // Updated example
+    example: '14a5fee6-bc4c-49c9-b78e-9752746c46c6',
     description: 'ID связанного счёта',
   })
   accountId: string;
   
   @ApiProperty({
-    example: 'some-category-uuid', // Added example
+    example: 'some-category-uuid',
     description: 'ID категории (если есть)',
     required: false,
     nullable: true,
@@ -69,7 +69,7 @@ export class TransactionResponseDto {
     required: false,
     nullable: true,
   })
-  description?: string | null; // Added back if you need it
+  description?: string | null;
   
   @ApiProperty({
     example: ['salary', 'monthly'],
@@ -77,26 +77,25 @@ export class TransactionResponseDto {
     type: [String],
     required: false,
   })
-  tags?: string[]; // Added back if you need it
+  tags?: string[];
   
   @ApiProperty({
-    example: '2025-05-10T12:00:00Z', // Updated example to current year
+    example: '2025-05-10T12:00:00Z',
     description: 'Дата создания записи',
     type: 'string',
     format: 'date-time',
   })
-  createdAt: Date; // Note: Prisma models usually have createdAt/updatedAt. Add these to your Prisma Transaction model if not already there.
+  createdAt: Date;
   
   @ApiProperty({
-    example: '2025-05-10T12:00:00Z', // Updated example to current year
+    example: '2025-05-10T12:00:00Z',
     description: 'Дата последнего обновления',
     type: 'string',
     format: 'date-time',
   })
-  updatedAt: Date; // Note: Prisma models usually have createdAt/updatedAt. Add these to your Prisma Transaction model if not already there.
-  
+  updatedAt: Date;
   @ApiProperty({
-    example: 'some-user-uuid', // Added example
+    example: 'some-user-uuid',
     description: 'ID пользователя',
   })
   userId: string;

@@ -1,4 +1,3 @@
-// src/accounts/dto/account-response.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
 import { AccountType } from '../entities/account.entity';
 

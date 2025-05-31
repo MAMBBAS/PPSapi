@@ -1,4 +1,3 @@
-// auth.service.ts
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import * as bcrypt from 'bcrypt';
@@ -28,21 +27,16 @@ export class AuthService {
   }
   
   async login(email: string, password: string) {
-    // Ищем пользователя по email
     const user = await this.usersService.findByEmail(email);
     
     if (!user) {
       throw new UnauthorizedException('Пользователь с таким email не найден');
     }
-    
-    // Сравниваем пароли
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     
     if (!isPasswordValid) {
       throw new UnauthorizedException('Неверный пароль');
     }
-    
-    // Создаем JWT токен
     const payload = {
       sub: user.id,
       email: user.email,

@@ -7,16 +7,14 @@ import {
   IsOptional,
   MaxLength,
   IsUUID,
-  IsArray, // Added for 'tags'
+  IsArray,
 } from 'class-validator';
 
-// New enum for backend
 export enum TransactionType {
   INCOME = 'income',
   EXPENSE = 'expense',
 }
 
-// You need to define TransactionStatus if you're using it
 export enum TransactionStatus {
   COMPLETED = 'completed',
   PENDING = 'pending',
@@ -41,7 +39,7 @@ export class CreateTransactionDto {
   })
   @IsNumber()
   @IsNotEmpty()
-  sum: number; // Corrected: this is 'sum', not 'amount'
+  sum: number;
   
   @ApiProperty({
     example: 'income',
@@ -53,7 +51,7 @@ export class CreateTransactionDto {
   type: TransactionType;
   
   @ApiProperty({
-    example: '2025-05-10T12:00:00Z', // Updated example to current year
+    example: '2025-05-10T12:00:00Z',
     description: 'Дата транзакции (по умолчанию текущая)',
     required: false,
   })
@@ -61,7 +59,7 @@ export class CreateTransactionDto {
   date?: Date;
   
   @ApiProperty({
-    example: '14a5fee6-bc4c-49c9-b78e-9752746c46c6', // Updated example to use your ID
+    example: '14a5fee6-bc4c-49c9-b78e-9752746c46c6',
     description: 'ID счёта, к которому относится транзакция',
   })
   @IsUUID()
@@ -69,7 +67,7 @@ export class CreateTransactionDto {
   accountId: string;
   
   @ApiProperty({
-    example: 'some-category-uuid', // Added example
+    example: 'some-category-uuid',
     description: 'ID категории транзакции (опционально)',
     required: false,
     nullable: true,
@@ -84,7 +82,7 @@ export class CreateTransactionDto {
   })
   @IsString()
   @IsOptional()
-  description?: string; // Added back if you need it
+  description?: string;
   
   @ApiProperty({
     example: 'completed',
@@ -94,7 +92,7 @@ export class CreateTransactionDto {
   })
   @IsEnum(TransactionStatus)
   @IsOptional()
-  status?: TransactionStatus; // Added back if you need it
+  status?: TransactionStatus;
   
   @ApiProperty({
     example: ['tag1', 'tag2'],
@@ -105,5 +103,5 @@ export class CreateTransactionDto {
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
-  tags?: string[]; // Added back if you need it
+  tags?: string[];
 }

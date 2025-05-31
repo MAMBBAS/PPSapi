@@ -1,4 +1,3 @@
-// src/event/event.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreateEventDto } from './dto/create-event.dto';
@@ -28,7 +27,6 @@ export class EventsService {
       });
       return { statusUpdated: true, newStatus: EventStatus.Completed };
     } else if (totalCollectedAmount < event.totalAmount && event.status === EventStatus.Completed) {
-      // Опционально: если вы хотите вернуть статус "Pending", когда сумма опускается ниже targetAmount
       await tx.event.update({
         where: { id: eventId },
         data: { status: EventStatus.Pending },
@@ -53,11 +51,8 @@ export class EventsService {
         },
       });
       
-      // Ищем создателя в предоставленном списке members
       const creatorProvidedMember = dto.members?.find(member => member.userId === creatorId);
       
-      // Если создатель указан в списке, используем его сумму
-      // Иначе, добавляем его с нулевым взносом по умолчанию
       const creatorMemberData = {
         eventId: event.id,
         userId: creatorId,
@@ -66,7 +61,6 @@ export class EventsService {
       
       const membersToCreate = [creatorMemberData];
       
-      // Добавляем других участников, исключая создателя, если он уже был обработан
       if (dto.members && dto.members.length > 0) {
         const otherMembers = dto.members.filter(member => member.userId !== creatorId);
         
@@ -165,8 +159,8 @@ export class EventsService {
     });
   }
   
-  async getEventWithDetails(eventId: string) {
-    return this.prisma.event.findUnique({
+  async getEventWithDetails(eventId: string, tx: any = this.prisma) {
+    return tx.event.findUnique({
       where: { id: eventId },
       include: {
         creator: true,
@@ -180,26 +174,74 @@ export class EventsService {
   }
   
   async updateEvent(id: string, dto: CreateEventDto) {
-    const updatedEvent = await this.prisma.event.update({
-      where: { id },
-      data: {
-        title: dto.title,
-        totalAmount: dto.totalAmount,
-        deadline: dto.deadline,
-      },
-      include: {
-        creator: true,
-        members: {
-          include: {
-            user: true,
-          },
+    return this.prisma.$transaction(async (tx) => {
+      const updatedEvent = await tx.event.update({
+        where: { id },
+        data: {
+          title: dto.title,
+          totalAmount: dto.totalAmount,
+          deadline: dto.deadline,
         },
-      },
+      });
+      
+      if (dto.members && dto.members.length > 0) {
+        const currentParticipants = await tx.eventParticipant.findMany({
+          where: { eventId: id },
+        });
+        
+        const currentParticipantMap = new Map(
+          currentParticipants.map(p => [p.userId, p])
+        );
+        
+        const newParticipantIds = new Set(dto.members.map(m => m.userId));
+        
+        for (const [userId, participant] of currentParticipantMap.entries()) {
+          if (!newParticipantIds.has(userId)) {
+            console.log(`Удаляем участника: ${userId}`);
+            await tx.eventParticipant.delete({
+              where: { id: participant.id },
+            });
+          }
+        }
+        for (const memberDto of dto.members) {
+          const existingParticipant = currentParticipantMap.get(memberDto.userId);
+          
+          if (existingParticipant) {
+            if (existingParticipant.amount !== memberDto.amount) {
+              console.log(`Обновляем участника <span class="math-inline">\{memberDto\.userId\}\: old amount\=</span>{existingParticipant.amount}, new amount=${memberDto.amount}`);
+              await tx.eventParticipant.update({
+                where: { id: existingParticipant.id },
+                data: { amount: memberDto.amount },
+              });
+            } else {
+              console.log(`Участник <span class="math-inline">\{memberDto\.userId\}\: сумма не изменилась \(</span>{existingParticipant.amount})`);
+            }
+          } else {
+            console.log(`Создаем нового участника: <span class="math-inline">\{memberDto\.userId\} с amount\=</span>{memberDto.amount}`);
+            await tx.eventParticipant.create({
+              data: {
+                eventId: id,
+                userId: memberDto.userId,
+                amount: memberDto.amount,
+              },
+            });
+          }
+        }
+        console.log('--- Завершено обновление участников ---');
+        
+      } else {
+        console.log('DTO.members пуст, удаляем всех участников.');
+        await tx.eventParticipant.deleteMany({
+          where: { eventId: id },
+        });
+      }
+      
+      await this._checkAndSetEventStatus(id, tx);
+      
+      const finalEventDetails = await this.getEventWithDetails(id, tx);
+      console.log('Финальный ответ события:', finalEventDetails.members.map(m => ({ userId: m.userId, amount: m.amount })));
+      return finalEventDetails;
     });
-    
-    await this._checkAndSetEventStatus(updatedEvent.id);
-    
-    return updatedEvent;
   }
   
   async deleteEvent(id: string) {

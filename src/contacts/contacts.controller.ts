@@ -24,7 +24,7 @@ import { ContactResponseDto } from './dto/contact-response.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth-guard';
 
 @ApiTags('Контакты')
-@Controller('contacts') // <-- Base path for all routes in this controller
+@Controller('contacts')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 export class ContactsController {
@@ -51,7 +51,7 @@ export class ContactsController {
   async createContact(
     @AuthUser() user: User,
     @Body() dto: CreateContactDto,
-    @Req() req: Request // Добавляем запрос для отладки
+    @Req() req: Request
   ) {
     if (!user) {
       throw new Error('User object is missing - check your AuthGuard');
@@ -60,7 +60,6 @@ export class ContactsController {
     return this.contactsService.createContactRequest(user, dto);
   }
   
-  // Этот эндпоинт останется /api/contacts/user/:userId
   @Get('/user/:userId')
   @ApiOperation({
     summary: 'Получить контакты пользователя',
@@ -75,8 +74,8 @@ export class ContactsController {
     return this.contactsService.getUserContacts(userId);
   }
   
-  // --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
-  @Delete('user/:contactId') // Маршрут теперь /contacts/user/:contactId
+  
+  @Delete('user/:contactId')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Удалить контакт' })
   @ApiParam({ name: 'contactId', description: 'ID контакта для удаления' })

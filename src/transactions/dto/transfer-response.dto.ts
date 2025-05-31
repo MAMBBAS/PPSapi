@@ -1,4 +1,3 @@
-// src/transactions/dto/transfer-response.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
 import { TransactionResponseDto } from './transaction-response.dto';
 

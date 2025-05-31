@@ -1,9 +1,8 @@
-// src/event/dto/event-response.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
 import { UserResponseDto } from '../../users/dto/user-response.dto';
 import { EventParticipantResponseDto } from './event-participant.dto';
 
-// Define the enum in TypeScript for consistency
+
 export enum EventStatus {
   Pending = 'Pending',
   Completed = 'Completed',
@@ -32,5 +31,5 @@ export class EventResponseDto {
   createdAt: Date;
   
   @ApiProperty({ enum: EventStatus, example: EventStatus.Pending, description: 'Статус события' })
-  status: EventStatus; // New status field
+  status: EventStatus;
 }

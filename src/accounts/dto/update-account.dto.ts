@@ -3,7 +3,6 @@ import { CreateAccountDto } from './create-account.dto';
 
 export class UpdateAccountDto extends PartialType(CreateAccountDto) {}
 
-// src/accounts/dto/account-response.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
 
 export class AccountResponseDto {

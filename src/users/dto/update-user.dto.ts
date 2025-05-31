@@ -1,4 +1,3 @@
-// update-user.dto.ts
 import {ApiPropertyOptional, PartialType} from '@nestjs/swagger';
 import { CreateUserDto } from './create-user.dto';
 

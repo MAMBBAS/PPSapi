@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-// Если у вас еще нет этого DTO, создайте его
+
 export class ContactResponseDto {
   @ApiProperty({
     description: 'ID записи контакта (связи) в базе данных',
     example: 'eebf5f8d-1e8b-41d6-9d9c-8391b13fa426',
   })
-  contactId: string; // Изменено с 'id' на 'contactId'
+  contactId: string;
   
   @ApiProperty({
     description: 'ID пользователя, с которым установлен контакт',
@@ -30,7 +30,7 @@ export class ContactResponseDto {
   createdAt: Date;
   
   @ApiProperty({ example: 'pending', enum: ['pending', 'accepted', 'blocked'] })
-  status: string; // Или 'ContactStatus' если у вас есть enum
+  status: string;
   
   @ApiProperty({
     description: 'True, если текущий пользователь является инициатором контакта',

@@ -1,4 +1,3 @@
-// src/transactions/dto/create-transfer.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty, IsNumber, IsPositive } from 'class-validator';
 

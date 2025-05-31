@@ -1,4 +1,3 @@
-// src/transactions/transactions.service.ts
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreateTransactionDto, TransactionType } from './dto/create-transaction.dto';
@@ -14,7 +13,7 @@ export class TransactionsService {
       createdAt: transaction.createdAt, status: transaction.status, updatedAt: new Date(),
       id: transaction.id,
       title: transaction.title,
-      sum: transaction.sum.toNumber(), // Преобразуем Decimal в number
+      sum: transaction.sum.toNumber(),
       type: transaction.type as TransactionType,
       date: transaction.date,
       accountId: transaction.accountId,
@@ -24,7 +23,6 @@ export class TransactionsService {
   }
   
   async create(userId: string, dto: CreateTransactionDto): Promise<TransactionResponseDto> {
-    // 1. Проверка существования и принадлежности счета пользователю
     const account = await this.prisma.account.findFirst({
       where: { id: dto.accountId, userId },
     });
@@ -32,17 +30,13 @@ export class TransactionsService {
       throw new BadRequestException('Счёт не найден или не принадлежит вам.');
     }
     
-    // 2. Проверка существования и принадлежности категории пользователю (если categoryId предоставлен)
     if (dto.categoryId) {
       const category = await this.prisma.category.findFirst({
-        where: { id: dto.categoryId, OR: [{ userId }, { userId: null }] }, // Категория может быть общей (userId: null) или пользовательской
-      });
+        where: { id: dto.categoryId, OR: [{ userId }, { userId: null }] }, });
       if (!category) {
         throw new BadRequestException('Категория не найдена или не принадлежит вам.');
       }
     }
-    
-    // 3. Создание транзакции
     const transaction = await this.prisma.transaction.create({
       data: {
         title: dto.title,
@@ -50,12 +44,11 @@ export class TransactionsService {
         type: dto.type,
         date: dto.date || new Date(),
         accountId: dto.accountId,
-        userId: userId, // Связываем транзакцию с пользователем
-        categoryId: dto.categoryId, // Связываем транзакцию с категорией
+        userId: userId,
+        categoryId: dto.categoryId,
       },
     });
     
-    // 4. Обновление баланса счета
     await this.prisma.account.update({
       where: { id: dto.accountId },
       data: {
@@ -69,11 +62,11 @@ export class TransactionsService {
   }
   
   async findAll(
-    userId: string, // Добавлено для фильтрации по пользователю
+    userId: string,
     filters: {
       type?: TransactionType;
-      accountId?: string; // Фильтр по аккаунту
-      categoryId?: string; // Фильтр по категории
+      accountId?: string;
+      categoryId?: string;
       startDate?: string;
       endDate?: string;
       limit?: number;
@@ -84,10 +77,10 @@ export class TransactionsService {
     
     const transactions = await this.prisma.transaction.findMany({
       where: {
-        userId, // Фильтруем транзакции по текущему пользователю
+        userId,
         type: type,
-        accountId: accountId, // Фильтр по accountId
-        categoryId: categoryId, // Фильтр по categoryId
+        accountId: accountId,
+        categoryId: categoryId,
         date: {
           gte: startDate ? new Date(startDate) : undefined,
           lte: endDate ? new Date(endDate) : undefined,
@@ -107,7 +100,7 @@ export class TransactionsService {
     const transaction = await this.prisma.transaction.findFirst({
       where: {
         id,
-        userId, // Убеждаемся, что транзакция принадлежит пользователю
+        userId,
       },
     });
     
@@ -120,7 +113,7 @@ export class TransactionsService {
   
   async update(userId: string, id: string, dto: UpdateTransactionDto): Promise<TransactionResponseDto> {
     const existingTransaction = await this.prisma.transaction.findFirst({
-      where: { id, userId }, // Убеждаемся, что транзакция принадлежит пользователю
+      where: { id, userId },
     });
     
     if (!existingTransaction) {
@@ -131,7 +124,6 @@ export class TransactionsService {
     const oldType = existingTransaction.type as TransactionType;
     const oldAccountId = existingTransaction.accountId;
     
-    // Проверка, существует ли новый счет, если accountId меняется, и принадлежит ли он пользователю
     if (dto.accountId && dto.accountId !== oldAccountId) {
       const newAccount = await this.prisma.account.findFirst({
         where: { id: dto.accountId, userId },
@@ -141,9 +133,8 @@ export class TransactionsService {
       }
     }
     
-    // Проверка, существует ли новая категория, если categoryId меняется
     if (dto.categoryId !== undefined && dto.categoryId !== existingTransaction.categoryId) {
-      if (dto.categoryId !== null) { // Если новую категорию устанавливают (не null)
+      if (dto.categoryId !== null) {
         const newCategory = await this.prisma.category.findFirst({
           where: { id: dto.categoryId, OR: [{ userId }, { userId: null }] },
         });
@@ -161,12 +152,10 @@ export class TransactionsService {
         type: dto.type,
         date: dto.date,
         accountId: dto.accountId,
-        categoryId: dto.categoryId, // Обновляем categoryId
-        // userId не меняется
+        categoryId: dto.categoryId,
       },
     });
     
-    // Откатываем старые изменения баланса
     if (oldType === TransactionType.INCOME) {
       await this.prisma.account.update({
         where: { id: oldAccountId },
@@ -179,7 +168,6 @@ export class TransactionsService {
       });
     }
     
-    // Применяем новые изменения баланса
     const newAccountId = dto.accountId || oldAccountId;
     const newType = dto.type || oldType;
     const newSum = dto.sum !== undefined ? dto.sum : oldSum;
@@ -203,7 +191,7 @@ export class TransactionsService {
     const transaction = await this.prisma.transaction.findFirst({
       where: {
         id,
-        userId, // Убеждаемся, что транзакция принадлежит пользователю
+        userId,
       },
     });
     
@@ -215,7 +203,6 @@ export class TransactionsService {
     const sum = transaction.sum.toNumber();
     const type = transaction.type as TransactionType;
     
-    // Откатываем изменения баланса перед удалением
     if (type === TransactionType.INCOME) {
       await this.prisma.account.update({
         where: { id: accountId },

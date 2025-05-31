@@ -1,4 +1,3 @@
-// src/contacts/dto/update-contact-status.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
 

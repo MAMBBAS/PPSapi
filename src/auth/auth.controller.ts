@@ -1,4 +1,3 @@
-// auth.controller.ts
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
@@ -19,14 +18,14 @@ export class AuthController {
   constructor(private authService: AuthService) {}
   
   @Post('register')
-  @HttpCode(HttpStatus.OK) // Добавляем установку статуса 200
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Регистрация пользователя',
     description: 'Создает нового пользователя в системе',
   })
-  @ApiOkResponse({ // Меняем CreatedResponse на OkResponse
+  @ApiOkResponse({
     description: 'Пользователь успешно зарегистрирован',
-    type: CreateUserDto, // Лучше создать отдельный UserResponseDto
+    type: CreateUserDto,
   })
   @ApiBody({ type: CreateUserDto })
   register(@Body() dto: CreateUserDto) {
