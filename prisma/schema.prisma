@@ -20,7 +20,6 @@ model User {
   accounts              Account[]
   eventMembers          EventParticipant[]
   createdEvents         Event[]                @relation("CreatedEvents")
-  goalMembers           GoalMember[]
   goals                 Goal[]
   transactions          Transaction[]
   contactOf             UserContact[]          @relation("ContactOf")
@@ -55,7 +54,6 @@ model Account {
   transactions          Transaction[]
   createdAt             DateTime                @default(now())
   updatedAt             DateTime                @updatedAt
-  goalsWithAutoSave     Goal[]
 
   @@map("accounts")
 }
@@ -97,41 +95,28 @@ model Transaction {
   @@map("transactions")
 }
 
+enum GoalStatus {
+  Pending
+  Completed
+}
+
 model Goal {
-  id                 String       @id @default(uuid())
-  userId             String
-  name               String
-  targetAmount       Decimal
-  currentAmount      Decimal      @default(0)
-  currency           String
-  targetDate         DateTime?
-  autoSavePercentage Decimal?
-  autoSaveAccountId  String?
-  category           String?
-  isShared           Boolean      @default(false)
-  createdAt          DateTime     @default(now())
-  updatedAt          DateTime     @updatedAt
-  icon               String?
-  color              String?
-  members            GoalMember[]
-  autoSaveAccount    Account?     @relation(fields: [autoSaveAccountId], references: [id])
-  user               User         @relation(fields: [userId], references: [id])
+  id            String    @id @default(uuid())
+  userId        String
+  name          String
+  targetAmount  Decimal
+  currentAmount Decimal   @default(0)
+  currency      String
+  targetDate    DateTime?
+  category      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  status        GoalStatus  @default(Pending)
+  user          User      @relation(fields: [userId], references: [id])
 
   @@map("goals")
 }
 
-model GoalMember {
-  id                String   @id @default(uuid())
-  goalId            String
-  userId            String
-  contributedAmount Decimal  @default(0)
-  joinedAt          DateTime @default(now())
-  status            String   @default("active")
-  goal              Goal     @relation(fields: [goalId], references: [id])
-  user              User     @relation(fields: [userId], references: [id])
-
-  @@map("goal_members")
-}
 
 enum EventStatus {
   Pending

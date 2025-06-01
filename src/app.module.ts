@@ -11,11 +11,12 @@ import { AccountsModule } from './accounts/accounts.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { CategoriesModule } from './categories/categories.module';
 import {PrismaModule} from './prisma.module';
+import { GoalsModule } from './goals/goals.module';
 
 @Module({
   imports: [UsersModule, ConfigModule.forRoot({
     isGlobal: true,
-  }), AuthModule, ContactsModule, EventsModule, AccountsModule, TransactionsModule, CategoriesModule, PrismaModule],
+  }), AuthModule, ContactsModule, EventsModule, AccountsModule, TransactionsModule, CategoriesModule, PrismaModule, GoalsModule],
   controllers: [AppController],
   providers: [AppService, AccountsService],
 })
