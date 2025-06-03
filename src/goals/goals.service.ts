@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreateGoalDto } from './dto/create-goal.dto';
 import { UpdateGoalDto } from './dto/update-goal.dto';
-import { Goal, GoalStatus } from '@prisma/client';
+import { GoalStatus } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
 @Injectable()
@@ -25,8 +25,7 @@ export class GoalService {
         data: { status: GoalStatus.Completed },
       });
       return { statusUpdated: true, newStatus: GoalStatus.Completed };
-    }
-    else if (goal.currentAmount.comparedTo(goal.targetAmount) < 0 && goal.status === GoalStatus.Completed) {
+    } else if (goal.currentAmount.comparedTo(goal.targetAmount) < 0 && goal.status === GoalStatus.Completed) {
       await tx.goal.update({
         where: { id: goalId },
         data: { status: GoalStatus.Pending },
@@ -36,7 +35,6 @@ export class GoalService {
     return { statusUpdated: false, currentStatus: goal.status };
   }
   
-  
   async createGoal(creatorId: string, dto: CreateGoalDto) {
     return this.prisma.$transaction(async (tx) => {
       const goal = await tx.goal.create({
@@ -44,16 +42,23 @@ export class GoalService {
           userId: creatorId,
           name: dto.name,
           targetAmount: new Decimal(dto.targetAmount),
-          currency: dto.currency,
-          targetDate: dto.targetDate,
-          category: dto.category,
+          currentAmount: new Decimal(dto.currentAmount ?? 0),
           status: GoalStatus.Pending,
         },
       });
       
       await this._checkAndSetGoalStatus(goal.id, tx);
       
-      return this.getGoalWithDetails(goal.id, tx);
+      return tx.goal.findUnique({
+        where: { id: goal.id },
+        select: {
+          id: true,
+          userId: true,
+          name: true,
+          currentAmount: true,
+          targetAmount: true,
+        }
+      });
     });
   }
   
@@ -62,15 +67,12 @@ export class GoalService {
       where: {
         userId: userId,
       },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            phone: true,
-            name: true,
-          },
-        },
+      select: {
+        id: true,
+        userId: true,
+        name: true,
+        currentAmount: true,
+        targetAmount: true,
       },
       orderBy: {
         createdAt: 'desc',
@@ -81,15 +83,12 @@ export class GoalService {
   async getGoalWithDetails(goalId: string, tx: any = this.prisma) {
     const goal = await tx.goal.findUnique({
       where: { id: goalId },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            phone: true,
-            name: true,
-          },
-        },
+      select: {
+        id: true,
+        userId: true,
+        name: true,
+        currentAmount: true,
+        targetAmount: true,
       },
     });
     if (!goal) {
@@ -113,21 +112,64 @@ export class GoalService {
         throw new UnauthorizedException('Вы не можете обновить эту цель.');
       }
       
-      const updatedGoal = await tx.goal.update({
+      await tx.goal.update({
         where: { id: goalId },
         data: {
           name: dto.name,
           targetAmount: dto.targetAmount !== undefined ? new Decimal(dto.targetAmount) : undefined,
-          currentAmount: dto.currentSum !== undefined ? new Decimal(dto.currentSum) : undefined,
-          currency: dto.currency,
-          targetDate: dto.targetDate,
-          category: dto.category,
+          currentAmount: dto.currentAmount !== undefined ? new Decimal(dto.currentAmount) : undefined,
         },
       });
       
       await this._checkAndSetGoalStatus(goalId, tx);
       
-      return this.getGoalWithDetails(goalId, tx);
+      return tx.goal.findUnique({
+        where: { id: goalId },
+        select: {
+          id: true,
+          userId: true,
+          name: true,
+          currentAmount: true,
+          targetAmount: true,
+        }
+      });
+    });
+  }
+  
+  async contributeToGoal(goalId: string, userId: string, amount: number) {
+    return this.prisma.$transaction(async (tx) => {
+      const goal = await tx.goal.findUnique({
+        where: { id: goalId },
+        select: { userId: true, currentAmount: true, targetAmount: true, status: true },
+      });
+      
+      if (!goal) {
+        throw new NotFoundException(`Цель с ID ${goalId} не найдена.`);
+      }
+      
+      if (goal.userId !== userId) {
+        throw new UnauthorizedException('Вы не можете вносить вклад в эту цель.');
+      }
+      
+      const newGoalCurrentAmount = new Decimal(goal.currentAmount).plus(new Decimal(amount));
+      
+      await tx.goal.update({
+        where: { id: goalId },
+        data: { currentAmount: newGoalCurrentAmount },
+      });
+      
+      await this._checkAndSetGoalStatus(goalId, tx);
+      
+      return tx.goal.findUnique({
+        where: { id: goalId },
+        select: {
+          id: true,
+          userId: true,
+          name: true,
+          currentAmount: true,
+          targetAmount: true,
+        }
+      });
     });
   }
   
@@ -150,34 +192,6 @@ export class GoalService {
         where: { id: goalId },
       });
       return { message: 'Цель успешно удалена' };
-    });
-  }
-  
-  async contributeToGoal(goalId: string, userId: string, amount: number) {
-    return this.prisma.$transaction(async (tx) => {
-      const goal = await tx.goal.findUnique({
-        where: { id: goalId },
-        select: { userId: true, currentAmount: true },
-      });
-      
-      if (!goal) {
-        throw new NotFoundException(`Цель с ID ${goalId} не найдена.`);
-      }
-      
-      if (goal.userId !== userId) {
-        throw new UnauthorizedException('Вы не можете вносить вклад в эту цель.');
-      }
-      
-      const newGoalCurrentAmount = new Decimal(goal.currentAmount).plus(new Decimal(amount));
-      
-      await tx.goal.update({
-        where: { id: goalId },
-        data: { currentAmount: newGoalCurrentAmount },
-      });
-      
-      await this._checkAndSetGoalStatus(goalId, tx);
-      
-      return this.getGoalWithDetails(goalId, tx);
     });
   }
 }

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsString, IsOptional, IsDateString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, IsOptional } from 'class-validator';
 
 export class CreateGoalDto {
   @ApiProperty({ example: 'На новый автомобиль', description: 'Название цели' })
@@ -12,18 +12,8 @@ export class CreateGoalDto {
   @IsNotEmpty()
   targetAmount: number;
   
-  @ApiProperty({ example: 'USD', description: 'Валюта цели (например, USD, EUR, RUB)' })
-  @IsString()
-  @IsNotEmpty()
-  currency: string;
-  
-  @ApiProperty({ example: '2026-12-31T23:59:59Z', description: 'Желаемая дата достижения цели', required: false })
-  @IsDateString()
+  @ApiProperty({ example: 0, description: 'Текущая накопленная сумма', required: false })
+  @IsNumber()
   @IsOptional()
-  targetDate?: Date;
-  
-  @ApiProperty({ example: 'Путешествия', description: 'Категория цели', required: false })
-  @IsString()
-  @IsOptional()
-  category?: string;
+  currentAmount?: number;
 }

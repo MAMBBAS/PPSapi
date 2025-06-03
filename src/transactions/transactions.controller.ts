@@ -60,18 +60,6 @@ export class TransactionsController {
     description: 'Фильтр по типу транзакции (income или expense)',
   })
   @ApiQuery({
-    name: 'accountId',
-    required: false,
-    type: String,
-    description: 'Фильтр по ID счёта',
-  })
-  @ApiQuery({
-    name: 'categoryId',
-    required: false,
-    type: String,
-    description: 'Фильтр по ID категории',
-  })
-  @ApiQuery({
     name: 'startDate',
     required: false,
     type: Date,
@@ -103,8 +91,6 @@ export class TransactionsController {
   findAll(
     @Req() req,
     @Query('type') type?: TransactionType,
-    @Query('accountId') accountId?: string,
-    @Query('categoryId') categoryId?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
     @Query('limit') limit?: number,
@@ -112,8 +98,6 @@ export class TransactionsController {
   ) {
     return this.transactionsService.findAll(req.user.id, {
       type,
-      accountId,
-      categoryId,
       startDate,
       endDate,
       limit,

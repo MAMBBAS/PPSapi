@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TransactionType, TransactionStatus } from './create-transaction.dto';
+import { TransactionType } from './create-transaction.dto';
 
 export class TransactionResponseDto {
   @ApiProperty({
@@ -40,60 +40,6 @@ export class TransactionResponseDto {
   })
   date: Date;
   
-  @ApiProperty({
-    example: 'completed',
-    description: 'Статус транзакции',
-    enum: TransactionStatus,
-    enumName: 'TransactionStatus',
-    default: TransactionStatus.COMPLETED,
-  })
-  status: TransactionStatus;
-  
-  @ApiProperty({
-    example: '14a5fee6-bc4c-49c9-b78e-9752746c46c6',
-    description: 'ID связанного счёта',
-  })
-  accountId: string;
-  
-  @ApiProperty({
-    example: 'some-category-uuid',
-    description: 'ID категории (если есть)',
-    required: false,
-    nullable: true,
-  })
-  categoryId?: string | null;
-  
-  @ApiProperty({
-    example: 'Зарплата за май',
-    description: 'Дополнительное описание',
-    required: false,
-    nullable: true,
-  })
-  description?: string | null;
-  
-  @ApiProperty({
-    example: ['salary', 'monthly'],
-    description: 'Теги для классификации',
-    type: [String],
-    required: false,
-  })
-  tags?: string[];
-  
-  @ApiProperty({
-    example: '2025-05-10T12:00:00Z',
-    description: 'Дата создания записи',
-    type: 'string',
-    format: 'date-time',
-  })
-  createdAt: Date;
-  
-  @ApiProperty({
-    example: '2025-05-10T12:00:00Z',
-    description: 'Дата последнего обновления',
-    type: 'string',
-    format: 'date-time',
-  })
-  updatedAt: Date;
   @ApiProperty({
     example: 'some-user-uuid',
     description: 'ID пользователя',

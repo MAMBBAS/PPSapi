@@ -51,7 +51,6 @@ model Account {
   userId                String
   user                  User                    @relation(fields: [userId], references: [id])
   cashbackCategories    String[]
-  transactions          Transaction[]
   createdAt             DateTime                @default(now())
   updatedAt             DateTime                @updatedAt
 
@@ -66,7 +65,6 @@ model Category {
   type                  String
   userId                String?
   user                  User?                  @relation(fields: [userId], references: [id])
-  transactions          Transaction[]
   createdAt             DateTime               @default(now())
 
   @@map("categories")
@@ -79,18 +77,11 @@ model Transaction {
   sum         Decimal
   type        String    // 'income' | 'expense'
   date        DateTime  @default(now())
-
-
-  accountId   String
-  account     Account   @relation(fields: [accountId], references: [id])
-
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt @default(now())
 
   userId      String
   user        User      @relation(fields: [userId], references: [id])
-
-
-  categoryId  String?
-  category    Category? @relation(fields: [categoryId], references: [id])
 
   @@map("transactions")
 }
@@ -106,9 +97,6 @@ model Goal {
   name          String
   targetAmount  Decimal
   currentAmount Decimal   @default(0)
-  currency      String
-  targetDate    DateTime?
-  category      String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   status        GoalStatus  @default(Pending)
